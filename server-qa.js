@@ -4,13 +4,12 @@ const port = 8125;
 var counter = 0;
 var qa = [];
 var user = require('os').userInfo().username;
+var files_counter = 10;
+
 
 const server = net.createServer((client)=>
 {
-  read_json();
-  fs.mkdir("log", (err)=>{if(err){console.error(err);}});
   client.id = user + '_' + (counter++).toString();
-  client.log = "log/" + client.id + ".log";
   console.log(client.id +' connected');
 
   client.setEncoding('utf8');
@@ -18,13 +17,12 @@ const server = net.createServer((client)=>
   client.on('data', (data) =>
   {
     console.log(data);
-    if(!client.qa)
+    if(!client.accepted)
     {
-      if(data == "qa")
+      if(data == "files")
       {
-        fs.writeFileSync(client.log, "client " + client.id + " connected \r\n", err=>{if(err)console.error(err)});
-        client.qa = true;
         client.write("ACK", err=>{if(err){console.error(err); throw err;}});
+        client.accepted = true;
       }
       else
       {
@@ -35,34 +33,18 @@ const server = net.createServer((client)=>
     {
       if(data == 'bye')
       {
-        fs.appendFileSync(client.log, client.id + ': ' + data+' \r\n', (err) => {if(err){console.error(err);}});
-        fs.appendFileSync(client.log, data+' \r\n', (err) => {if(err){console.error(err);}});
         client.write('bye');
       }
       else
       {
-      fs.appendFileSync(client.log, client.id + ': ' +  data+' \r\n', err=>{if(err)console.error(err)});
-        if(Math.random() > 0.35)
-        {
-          qa.forEach(element => 
-          {
-            if(data == element.q)
-            {
-              client.write(element.a, err=>{if(err){console.error(err); throw err;}});
-              fs.appendFileSync(client.log, 'server: ' + element.a+' \r\n', err=>{if(err)console.error(err)});
-            }
-          });
-        }
-        else
-        {
-          client.write("idk the answer, sorry :(", err=>{if(err){console.error(err); throw err;}})
-          fs.appendFileSync(client.log,  'server: ' + "idk the answer, sorry :( \r\n", err=>{if(err)console.error(err)});
-        }
+        
       }
     }
   })
   client.on('close', (err)=>{if(err){console.error(err); throw err;}})
 })
+
+
 
 server.listen(port, () =>
 {
