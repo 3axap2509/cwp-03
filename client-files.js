@@ -41,19 +41,17 @@ client.on('data', function(data)
           {
             if(path.extname(item) != "")
             {
-              var buf1 = fs.readFileSync(paths[i] + "\\" + item);
-          
-                client.write(item.toString() + '\r\n');
-                client.write(buf1 + '\r\n');  
+              var buf1 = fs.readFileSync(paths[i] + "//" + item);
+              client.write(item.toString()); 
+              client.write('%%%');
+              client.write(buf1);
+              client.write('||||');
             }
           })
         }
       })
-      if(i == paths.length-1)
-      {
-        client.write("bye");
-      }
     }
+    client.write('bye');
   }
   else if(data == 'DEC'|| data =='bye')
   {
